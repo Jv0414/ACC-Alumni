@@ -6,6 +6,7 @@ import {
   COLLEGE_COURSE_OPTIONS as COURSE_OPTIONS,
   COLLEGE_DEPARTMENT_OPTIONS as DEPARTMENT_OPTIONS
 } from '../../data/collegePrograms';
+import { formatDate, formatFullName, getAge } from '../../utils/formatters';
 
 interface AlumniRegisterProps {
   isOpen: boolean;
@@ -65,6 +66,9 @@ const AlumniRegister = ({ isOpen, onClose, onRegistered }: AlumniRegisterProps) 
   const [submitted, setSubmitted] = useState(false);
   const [savedRegistration, setSavedRegistration] = useState<AlumniRegistration | null>(null);
   const [copied, setCopied] = useState(false);
+  // Holds the validated answers while the registrant reviews them on the
+  // confirmation step. Null means the form is still being filled in.
+  const [pendingData, setPendingData] = useState<AlumniRegistrationData | null>(null);
 
   // Lock background scrolling while the modal is open.
   useEffect(() => {
@@ -88,6 +92,7 @@ const AlumniRegister = ({ isOpen, onClose, onRegistered }: AlumniRegisterProps) 
     setSubmitted(false);
     setSavedRegistration(null);
     setCopied(false);
+    setPendingData(null);
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -123,7 +128,9 @@ const AlumniRegister = ({ isOpen, onClose, onRegistered }: AlumniRegisterProps) 
     return Array.from(errors);
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  // First submit does not send anything - it validates the answers and opens
+  // the confirmation step below.
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
     const errors = validateForm();
@@ -132,35 +139,48 @@ const AlumniRegister = ({ isOpen, onClose, onRegistered }: AlumniRegisterProps) 
       return;
     }
 
+    setPendingData({
+      fullName: formData.fullName.trim(),
+      // Optional - saved empty when the registrant has no suffix, so the
+      // registration can still be sent without it.
+      suffix: formData.suffix.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      address: formData.address.trim(),
+      dateOfBirth: formData.dateOfBirth,
+      // Validation guarantees gender is selected before submission.
+      gender: formData.gender as AlumniRegistrationData['gender'],
+      studentId: formData.studentId.trim(),
+      course: formData.course,
+      department: formData.department,
+      expectedGraduationYear: Number(formData.expectedGraduationYear)
+    });
+  };
+
+  // Runs only after the registrant confirms the review step.
+  const handleConfirm = async () => {
+    if (!pendingData) return;
+
     setLoading(true);
     try {
       // Persist the submission. The registration service assigns the
       // reference number and the initial Pending status; this call is later
       // swapped for the real backend API without changing the UI.
-      const registration = await submitRegistration({
-        fullName: formData.fullName.trim(),
-        // Optional - saved empty when the registrant has no suffix, so the
-        // registration can still be sent without it.
-        suffix: formData.suffix.trim(),
-        email: formData.email.trim(),
-        phone: formData.phone.trim(),
-        address: formData.address.trim(),
-        dateOfBirth: formData.dateOfBirth,
-        // Validation guarantees gender is selected before submission.
-        gender: formData.gender as AlumniRegistrationData['gender'],
-        studentId: formData.studentId.trim(),
-        course: formData.course,
-        department: formData.department,
-        expectedGraduationYear: Number(formData.expectedGraduationYear)
-      });
+      const registration = await submitRegistration(pendingData);
 
       onRegistered?.(registration);
 
       setSavedRegistration(registration);
       setSubmitted(true);
+      setPendingData(null);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Back to the form so every answer can be re-edited.
+  const handleEdit = () => {
+    setPendingData(null);
   };
 
   const inputClass = (field: keyof RegisterFormData) =>
@@ -214,6 +234,102 @@ const AlumniRegister = ({ isOpen, onClose, onRegistered }: AlumniRegisterProps) 
             <button className="btn btn-primary alumni-submit" onClick={onClose}>
               Back to Home
             </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Confirmation step - the registrant reviews everything they entered and
+  // chooses to submit or go back and re-edit before anything is saved.
+  if (pendingData) {
+    return (
+      <div className="alumni-modal-overlay" role="dialog" aria-modal="true" aria-label="Review your registration">
+        <div className="alumni-modal">
+          <header className="alumni-modal-header">
+            <div>
+              <h2>Review Your Registration</h2>
+              <p>Confirm your information before submitting</p>
+            </div>
+            <button className="alumni-modal-close" onClick={onClose} aria-label="Close registration form">
+              <X size={20} />
+            </button>
+          </header>
+
+          <div className="alumni-modal-body">
+            <dl className="alumni-status-details">
+              <div className="alumni-status-row">
+                <dt>Full Name</dt>
+                <dd>{formatFullName(pendingData.fullName, pendingData.suffix)}</dd>
+              </div>
+              <div className="alumni-status-row">
+                <dt>Email</dt>
+                <dd>{pendingData.email}</dd>
+              </div>
+              <div className="alumni-status-row">
+                <dt>Phone</dt>
+                <dd>{pendingData.phone}</dd>
+              </div>
+              {pendingData.address && (
+                <div className="alumni-status-row">
+                  <dt>Address</dt>
+                  <dd>{pendingData.address}</dd>
+                </div>
+              )}
+              <div className="alumni-status-row">
+                <dt>Date of Birth</dt>
+                <dd>
+                  {formatDate(pendingData.dateOfBirth)} ({getAge(pendingData.dateOfBirth)} yrs)
+                </dd>
+              </div>
+              <div className="alumni-status-row">
+                <dt>Gender</dt>
+                <dd>{pendingData.gender}</dd>
+              </div>
+              <div className="alumni-status-row">
+                <dt>Student ID</dt>
+                <dd>{pendingData.studentId || '—'}</dd>
+              </div>
+              <div className="alumni-status-row">
+                <dt>Course</dt>
+                <dd>{pendingData.course}</dd>
+              </div>
+              <div className="alumni-status-row">
+                <dt>Department</dt>
+                <dd>{pendingData.department}</dd>
+              </div>
+              <div className="alumni-status-row">
+                <dt>Expected Graduation Year</dt>
+                <dd>{pendingData.expectedGraduationYear}</dd>
+              </div>
+            </dl>
+
+            <div className="alumni-review-ask">
+              <strong>Is the information you entered correct?</strong>
+              <p>
+                If something is not right you can go back and re-edit your answers. Once
+                confirmed, your registration will be submitted for verification.
+              </p>
+            </div>
+
+            <div className="alumni-actions-row">
+              <button type="button" className="btn btn-secondary" onClick={handleEdit} disabled={loading}>
+                No, Re-edit My Answers
+              </button>
+              <button type="button" className="btn btn-primary alumni-submit" onClick={handleConfirm} disabled={loading}>
+                {loading ? (
+                  <span className="loading-btn">
+                    <span className="btn-spinner" aria-hidden="true"></span>
+                    Submitting…
+                  </span>
+                ) : (
+                  <>
+                    <UserPlus size={16} />
+                    Yes, Submit Registration
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>

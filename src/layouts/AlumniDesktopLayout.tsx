@@ -2,21 +2,15 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, LogOut, UserPlus } from 'lucide-react';
 import AlumniHome from '../pages/desktop/AlumniHome';
-import AlumniProfile from '../pages/desktop/AlumniProfile';
 import AlumniRegister from '../pages/desktop/AlumniRegister';
 import RegistrationStatus from '../pages/desktop/RegistrationStatus';
 import type { AlumniRegistration } from '../types/Registration';
-import { formatFullName, getInitials } from '../utils/formatters';
-
-type AlumniDesktopTab = 'home' | 'profile';
 
 interface AlumniDesktopLayoutProps {
-  user: { name: string; email: string; role: string } | null;
   onLogout: () => void;
 }
 
-const AlumniDesktopLayout = ({ user, onLogout }: AlumniDesktopLayoutProps) => {
-  const [tab, setTab] = useState<AlumniDesktopTab>('home');
+const AlumniDesktopLayout = ({ onLogout }: AlumniDesktopLayoutProps) => {
   const [showRegister, setShowRegister] = useState(false);
   const [showStatus, setShowStatus] = useState(false);
   const [registration, setRegistration] = useState<AlumniRegistration | null>(null);
@@ -32,7 +26,7 @@ const AlumniDesktopLayout = ({ user, onLogout }: AlumniDesktopLayoutProps) => {
       {/* Desktop navbar */}
       <header className="alumni-navbar">
         <div className="alumni-navbar-inner">
-          <button className="alumni-brand" onClick={() => setTab('home')} aria-label="Go to home">
+          <div className="alumni-brand">
             <span className="alumni-brand-logo">
               <img src="/icons/logo.png" alt="ACC Alumni logo" width={38} height={38} />
             </span>
@@ -40,33 +34,18 @@ const AlumniDesktopLayout = ({ user, onLogout }: AlumniDesktopLayoutProps) => {
               <span className="alumni-brand-title">ACC Alumni</span>
               <span className="alumni-brand-subtitle">Alumni Management System</span>
             </span>
-          </button>
+          </div>
 
           <nav className="alumni-nav">
-            <button
-              className={`alumni-nav-link${tab === 'home' ? ' is-active' : ''}`}
-              onClick={() => setTab('home')}
-            >
+            <button className="alumni-nav-link is-active">
               <Home size={18} />
               Home
             </button>
           </nav>
 
           <div className="alumni-navbar-actions">
-            {/* Register button until registration is complete; afterwards it is
-                replaced by the profile shortcut chip. */}
-            {registration ? (
-              <button
-                className={`alumni-user-chip${tab === 'profile' ? ' is-active' : ''}`}
-                onClick={() => setTab('profile')}
-                aria-label="My profile"
-              >
-                <span className="alumni-user-avatar">{getInitials(registration.fullName)}</span>
-                <span className="alumni-user-name">
-                  {formatFullName(registration.fullName, registration.suffix)}
-                </span>
-              </button>
-            ) : (
+            {/* Register button until registration is complete. */}
+            {!registration && (
               <button className="btn btn-primary alumni-register-cta" onClick={() => setShowRegister(true)}>
                 <UserPlus size={16} />
                 Register
@@ -82,16 +61,7 @@ const AlumniDesktopLayout = ({ user, onLogout }: AlumniDesktopLayoutProps) => {
 
       {/* Page content */}
       <main className="alumni-desktop-content">
-        {tab === 'home' && (
-          <AlumniHome onCheckStatus={() => setShowStatus(true)} />
-        )}
-        {tab === 'profile' && (
-          <AlumniProfile
-            user={user}
-            registration={registration}
-            onStartRegistration={() => setShowRegister(true)}
-          />
-        )}
+        <AlumniHome onCheckStatus={() => setShowStatus(true)} />
       </main>
 
       {/* Desktop registration modal */}

@@ -4627,6 +4627,28 @@ textarea.alumni-input {
   color: var(--danger);
 }
 
+/* Registration review step - the confirmation questions shown before a
+   registration is finally submitted */
+.alumni-review-ask {
+  margin-top: 20px;
+  padding: 14px 16px;
+  background-color: var(--primary-light);
+  border-radius: var(--radius);
+}
+
+.alumni-review-ask strong {
+  display: block;
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.alumni-review-ask p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
 .alumni-status-details {
   margin: 0;
   display: flex;

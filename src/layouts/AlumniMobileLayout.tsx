@@ -1,20 +1,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { MobileTab } from '../types/mobile';
-import { CircleUserRound, UserPlus } from 'lucide-react';
+import { LogOut, UserPlus } from 'lucide-react';
 import AlumniHome from '../pages/mobile/AlumniHome';
-import AlumniProfile from '../pages/mobile/AlumniProfile';
 import AlumniRegister from '../pages/mobile/AlumniRegister';
 import RegistrationStatus from '../pages/mobile/RegistrationStatus';
 import type { AlumniRegistration } from '../types/Registration';
 
 interface AlumniMobileLayoutProps {
-  user: { name: string; email: string; role: string } | null;
   onLogout: () => void;
 }
 
-const AlumniMobileLayout = ({ user, onLogout }: AlumniMobileLayoutProps) => {
-  const [tab, setTab] = useState<MobileTab>('home');
+const AlumniMobileLayout = ({ onLogout }: AlumniMobileLayoutProps) => {
   const [showRegister, setShowRegister] = useState(false);
   const [showStatus, setShowStatus] = useState(false);
   const [registration, setRegistration] = useState<AlumniRegistration | null>(null);
@@ -25,31 +21,24 @@ const AlumniMobileLayout = ({ user, onLogout }: AlumniMobileLayoutProps) => {
     navigate('/login');
   };
 
-  const headerTitle = tab === 'home' ? 'ACC Alumni' : 'Profile';
-
   return (
     <div className="alumni-mobile-app">
       {/* Mobile app header */}
       <header className="mobile-header">
-        <button
-          type="button"
-          className="mobile-header-left"
-          onClick={() => setTab('home')}
-          aria-label="Go to home"
-        >
+        <div className="mobile-header-left">
           <img src="/icons/logo.png" alt="ACC Alumni" className="mobile-logo" width={32} height={32} />
-          <span className="mobile-header-title">{headerTitle}</span>
-        </button>
+          <span className="mobile-header-title">ACC Alumni</span>
+        </div>
         <div className="mobile-header-right">
-          {/* Only the Register button until registration is complete;
-              afterwards it is replaced by the Profile shortcut. */}
+          {/* Register button until registration is complete; afterwards a
+              logout shortcut (there is no profile page). */}
           {registration ? (
             <button
-              className={`mobile-header-icon-btn${tab === 'profile' ? ' is-active' : ''}`}
-              aria-label="Profile"
-              onClick={() => setTab('profile')}
+              className="mobile-header-icon-btn"
+              aria-label="Log out"
+              onClick={handleLogout}
             >
-              <CircleUserRound size={20} />
+              <LogOut size={20} />
             </button>
           ) : (
             <button
@@ -66,15 +55,7 @@ const AlumniMobileLayout = ({ user, onLogout }: AlumniMobileLayoutProps) => {
 
       {/* Scrollable screen content */}
       <main className="mobile-content">
-        {tab === 'home' && <AlumniHome onCheckStatus={() => setShowStatus(true)} />}
-        {tab === 'profile' && (
-          <AlumniProfile
-            user={user}
-            registration={registration}
-            onStartRegistration={() => setShowRegister(true)}
-            onLogout={handleLogout}
-          />
-        )}
+        <AlumniHome onCheckStatus={() => setShowStatus(true)} />
       </main>
 
       {/* Full-screen registration sheet */}

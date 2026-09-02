@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { ChevronRight, CircleUserRound, FileSearch, Home, UserPlus } from 'lucide-react';
+import { ChevronRight, FileSearch, Home, UserPlus } from 'lucide-react';
 import Sidebar, { type SidebarNavItem } from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 import type { AlumniRegistration } from '../types/Registration';
@@ -19,14 +19,12 @@ export interface AlumniPortalContext {
 
 const alumniNavItems: SidebarNavItem[] = [
   { path: '/alumni', label: 'Home', icon: Home, end: true },
-  { path: '/alumni/profile', label: 'My Profile', icon: CircleUserRound },
   { path: '/alumni/registration', label: 'Registration', icon: UserPlus },
   { path: '/alumni/status', label: 'Check Status', icon: FileSearch }
 ];
 
 const pageTitles: Record<string, string> = {
   '/alumni': 'Home',
-  '/alumni/profile': 'My Profile',
   '/alumni/registration': 'Alumni Registration',
   '/alumni/status': 'Check Registration Status'
 };
@@ -34,7 +32,7 @@ const pageTitles: Record<string, string> = {
 // Alumni self-service portal. Reuses the same system shell as the
 // admin/staff dashboard (sidebar + navbar + content area) with its own
 // navigation and pages. Registration state lives here so a submission on
-// the Registration page is instantly reflected on Home and My Profile.
+// the Registration page is instantly reflected on Home.
 const AlumniSystemLayout = ({ user, onLogout }: AlumniSystemLayoutProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [registration, setRegistration] = useState<AlumniRegistration | null>(null);

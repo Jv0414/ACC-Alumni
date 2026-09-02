@@ -5,7 +5,6 @@ import DashboardLayout from './layouts/DashboardLayout';
 import AlumniSystemLayout from './layouts/AlumniSystemLayout';
 import UpcomingGrads from './pages/UpcomingGrads';
 import AlumniSystemHome from './pages/alumni/Home';
-import AlumniSystemProfile from './pages/alumni/Profile';
 import AlumniSystemRegister from './pages/alumni/Register';
 import AlumniSystemStatus from './pages/alumni/Status';
 import Home from './pages/Home';
@@ -51,7 +50,6 @@ const App = () => {
             }
           >
             <Route index element={<AlumniSystemHome />} />
-            <Route path="profile" element={<AlumniSystemProfile />} />
             <Route path="registration" element={<AlumniSystemRegister />} />
             <Route path="status" element={<AlumniSystemStatus />} />
           </Route>
