@@ -10,8 +10,7 @@ const SCHOOL_MILESTONES = [
 ];
 
 const AlumniSystemHome = () => {
-  const { user, registration } = useOutletContext<AlumniPortalContext>();
-  const firstName = (user?.name || '').trim().split(' ')[0];
+  const { registration } = useOutletContext<AlumniPortalContext>();
 
   return (
     <div className="page-content">
@@ -19,8 +18,7 @@ const AlumniSystemHome = () => {
       <section className="alumni-hero alumni-hero-portal">
         <img src="/images/accbuild.jpg" alt="" aria-hidden="true" className="alumni-hero-img" />
         <div className="alumni-hero-overlay">
-          <span className="alumni-hero-badge">Alumni Self-Service Portal</span>
-          <h2>{firstName ? `Welcome back, ${firstName}!` : 'Welcome!'}</h2>
+          <h2>Welcome to</h2>
           <p>ACC Alumni Management System</p>
           <div className="alumni-hero-actions">
             {!registration && (

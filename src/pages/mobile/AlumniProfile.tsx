@@ -1,7 +1,7 @@
 import { alumniData } from '../../data/alumniData';
 import type { Alumni } from '../../types/Alumni';
 import type { AlumniRegistration } from '../../types/Registration';
-import { getInitials, formatDate, formatShortDate, getAge } from '../../utils/formatters';
+import { formatFullName, getInitials, formatDate, formatShortDate, getAge } from '../../utils/formatters';
 import {
   Mail,
   Phone,
@@ -10,7 +10,7 @@ import {
   Briefcase,
   Building2,
   CreditCard,
-  Award,
+  User,
   Calendar,
   Clock,
   Hash,
@@ -68,11 +68,14 @@ const AlumniProfile = ({ user, registration, onStartRegistration, onLogout }: Al
     address: registration.address || base.address,
     dateOfBirth: registration.dateOfBirth,
     gender: registration.gender,
-    studentId: registration.studentId,
+    studentId: registration.studentId ?? '',
     course: registration.course,
     department: registration.department,
     graduationYear: registration.expectedGraduationYear
   };
+
+  // The suffix is optional - it is only appended when the registrant gave one.
+  const displayName = formatFullName(registration.fullName, registration.suffix);
 
   return (
     <div className="mobile-tab-header">
@@ -85,24 +88,8 @@ const AlumniProfile = ({ user, registration, onStartRegistration, onLogout }: Al
         <span className="mobile-profile-avatar" style={{ backgroundColor: alumni.avatarColor }}>
           {getInitials(alumni.fullName)}
         </span>
-        <h3>{alumni.fullName}</h3>
+        <h3>{displayName}</h3>
         <p>{alumni.course} · Class of {alumni.graduationYear}</p>
-        <span className="mobile-job-status-chip">{alumni.employmentStatus}</span>
-      </div>
-
-      <div className="mobile-profile-stats">
-        <div>
-          <strong>{alumni.yearsOfExperience}+</strong>
-          <span>Years exp.</span>
-        </div>
-        <div>
-          <strong>{alumni.gender}</strong>
-          <span>Gender</span>
-        </div>
-        <div>
-          <strong>{alumni.honors || '—'}</strong>
-          <span>Honors</span>
-        </div>
       </div>
 
       <div className="mobile-profile-section">
@@ -111,6 +98,7 @@ const AlumniProfile = ({ user, registration, onStartRegistration, onLogout }: Al
           <span><Mail size={16} /> {alumni.email}</span>
           <span><Phone size={16} /> {alumni.phone}</span>
           <span><MapPin size={16} /> {alumni.address}</span>
+          <span><User size={16} /> {alumni.gender}</span>
         </div>
       </div>
 
@@ -127,7 +115,6 @@ const AlumniProfile = ({ user, registration, onStartRegistration, onLogout }: Al
         <div className="mobile-profile-rows">
           <span><GraduationCap size={16} /> {alumni.department}</span>
           <span><CreditCard size={16} /> Student ID: {alumni.studentId}</span>
-          {alumni.honors !== 'None' && <span><Award size={16} /> {alumni.honors}</span>}
           <span><Calendar size={16} /> Born {formatDate(alumni.dateOfBirth)} ({getAge(alumni.dateOfBirth)} yrs)</span>
         </div>
       </div>

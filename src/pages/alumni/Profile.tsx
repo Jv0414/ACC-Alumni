@@ -1,6 +1,5 @@
 import { Link, useOutletContext } from 'react-router-dom';
 import {
-  Award,
   Briefcase,
   Building2,
   Calendar,
@@ -11,12 +10,13 @@ import {
   Mail,
   MapPin,
   Phone,
+  User,
   UserPlus
 } from 'lucide-react';
 import type { AlumniPortalContext } from '../../layouts/AlumniSystemLayout';
 import type { Alumni } from '../../types/Alumni';
 import { alumniData } from '../../data/alumniData';
-import { getInitials, formatDate, getAge } from '../../utils/formatters';
+import { formatFullName, getInitials, formatDate, getAge } from '../../utils/formatters';
 
 const AlumniSystemProfile = () => {
   const { user, registration } = useOutletContext<AlumniPortalContext>();
@@ -61,11 +61,16 @@ const AlumniSystemProfile = () => {
     address: registration.address || base.address,
     dateOfBirth: registration.dateOfBirth,
     gender: registration.gender,
-    studentId: registration.studentId,
+    studentId: registration.studentId ?? '',
+    // Registrants may belong to any education level (college, SHS, elementary).
+    educationLevel: registration.educationLevel ?? base.educationLevel,
     course: registration.course,
     department: registration.department,
     graduationYear: registration.expectedGraduationYear
   };
+
+  // The suffix is optional - it is only appended when the registrant gave one.
+  const displayName = formatFullName(registration.fullName, registration.suffix);
 
   return (
     <div className="page-content">
@@ -79,29 +84,13 @@ const AlumniSystemProfile = () => {
           {getInitials(alumni.fullName)}
         </span>
         <div className="alumni-profile-id">
-          <h2>{alumni.fullName}</h2>
-          <p>{alumni.course} · Class of {alumni.graduationYear}</p>
-          <span className="alumni-status-chip">{alumni.employmentStatus}</span>
+          <h2>{displayName}</h2>
+          <p>{alumni.course ? `${alumni.course} · ` : ''}Class of {alumni.graduationYear}</p>
         </div>
         <span className={`alumni-status-badge is-${registration.status.toLowerCase()}`}>
           {registration.status === 'Pending' && <Clock size={14} />}
           {registration.status}
         </span>
-      </div>
-
-      <div className="alumni-profile-stats">
-        <div>
-          <strong>{alumni.yearsOfExperience}+</strong>
-          <span>Years experience</span>
-        </div>
-        <div>
-          <strong>{alumni.gender}</strong>
-          <span>Gender</span>
-        </div>
-        <div>
-          <strong>{alumni.honors || '—'}</strong>
-          <span>Honors</span>
-        </div>
       </div>
 
       <div className="alumni-profile-grid">
@@ -111,6 +100,7 @@ const AlumniSystemProfile = () => {
             <span><Mail size={16} /> {alumni.email}</span>
             <span><Phone size={16} /> {alumni.phone}</span>
             <span><MapPin size={16} /> {alumni.address}</span>
+            <span><User size={16} /> {alumni.gender}</span>
           </div>
         </div>
 
@@ -126,8 +116,7 @@ const AlumniSystemProfile = () => {
           <h4>Academic Record</h4>
           <div className="alumni-info-rows">
             <span><GraduationCap size={16} /> {alumni.department}</span>
-            <span><CreditCard size={16} /> Student ID: {alumni.studentId}</span>
-            {alumni.honors !== 'None' && <span><Award size={16} /> {alumni.honors}</span>}
+            <span><CreditCard size={16} /> Student ID: {alumni.studentId || '—'}</span>
             <span><Calendar size={16} /> Born {formatDate(alumni.dateOfBirth)} ({getAge(alumni.dateOfBirth)} yrs)</span>
           </div>
         </div>

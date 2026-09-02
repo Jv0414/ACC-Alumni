@@ -7,7 +7,7 @@ import {
   isValidReferenceNumberFormat,
   normalizeReferenceNumber
 } from '../../services/registrationService';
-import { formatDate, getAge } from '../../utils/formatters';
+import { formatDate, formatFullName, getAge } from '../../utils/formatters';
 import type { AlumniPortalContext } from '../../layouts/AlumniSystemLayout';
 
 const AlumniSystemStatus = () => {
@@ -29,7 +29,7 @@ const AlumniSystemStatus = () => {
     }
 
     if (!isValidReferenceNumberFormat(normalized)) {
-      setError('Reference numbers look like ACC-2026-00125. Please check and try again.');
+      setError('Reference numbers look like ACC-2B23-55B19. Please check and try again.');
       setResult(null);
       return;
     }
@@ -74,7 +74,7 @@ const AlumniSystemStatus = () => {
             <input
               type="text"
               className="alumni-input"
-              placeholder="e.g. ACC-2026-00125"
+              placeholder="e.g. ACC-2B23-55B19"
               value={referenceInput}
               onChange={(e) => setReferenceInput(e.target.value)}
               aria-label="Reference number"
@@ -114,7 +114,7 @@ const AlumniSystemStatus = () => {
               <dl className="alumni-status-details">
                 <div className="alumni-status-row">
                   <dt>Full Name</dt>
-                  <dd>{result.fullName}</dd>
+                  <dd>{formatFullName(result.fullName, result.suffix)}</dd>
                 </div>
                 <div className="alumni-status-row">
                   <dt>Email</dt>
@@ -142,7 +142,7 @@ const AlumniSystemStatus = () => {
                 </div>
                 <div className="alumni-status-row">
                   <dt>Student ID</dt>
-                  <dd>{result.studentId}</dd>
+                  <dd>{result.studentId || '—'}</dd>
                 </div>
                 <div className="alumni-status-row">
                   <dt>Course</dt>

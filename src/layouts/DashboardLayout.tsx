@@ -12,6 +12,7 @@ interface DashboardLayoutProps {
 
 const pageTitles: Record<string, string> = {
   '/alumni': 'ACC Alumni',
+  '/upcoming-grads': 'Upcoming Graduates',
   '/employment': 'Employment Tracking',
   '/events': 'Events Management',
   '/surveys': 'Surveys',
@@ -20,7 +21,6 @@ const pageTitles: Record<string, string> = {
 };
 
 const DashboardLayout = ({ onLogout }: DashboardLayoutProps) => {
-  const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -35,9 +35,7 @@ const DashboardLayout = ({ onLogout }: DashboardLayoutProps) => {
   return (
     <div className="app-layout">
       <Sidebar
-        collapsed={collapsed}
         mobileOpen={mobileOpen}
-        onToggleCollapse={() => setCollapsed(!collapsed)}
         onCloseMobile={() => setMobileOpen(false)}
         onLogout={handleLogout}
       />

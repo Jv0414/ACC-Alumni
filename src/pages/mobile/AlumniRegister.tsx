@@ -10,6 +10,10 @@ import {
 } from 'lucide-react';
 import type { AlumniRegistration, AlumniRegistrationData } from '../../types/Registration';
 import { submitRegistration } from '../../services/registrationService';
+import {
+  COLLEGE_COURSE_OPTIONS as COURSE_OPTIONS,
+  COLLEGE_DEPARTMENT_OPTIONS as DEPARTMENT_OPTIONS
+} from '../../data/collegePrograms';
 
 interface AlumniRegisterProps {
   isOpen: boolean;
@@ -19,6 +23,7 @@ interface AlumniRegisterProps {
 
 interface RegisterFormData {
   fullName: string;
+  suffix: string;
   email: string;
   phone: string;
   address: string;
@@ -32,6 +37,7 @@ interface RegisterFormData {
 
 const initialFormData: RegisterFormData = {
   fullName: '',
+  suffix: '',
   email: '',
   phone: '',
   address: '',
@@ -43,31 +49,8 @@ const initialFormData: RegisterFormData = {
   expectedGraduationYear: ''
 };
 
-// Options mirror the departments/courses already tracked in alumniData.
-const COURSE_OPTIONS = [
-  'BS Accountancy',
-  'BS Architecture',
-  'BS Business Administration',
-  'BS Civil Engineering',
-  'BS Computer Engineering',
-  'BS Computer Science',
-  'BS Electrical Engineering',
-  'BS Information Technology',
-  'BS Mechanical Engineering',
-  'BS Nursing',
-  'BS Psychology',
-  'BS Tourism Management'
-];
-
-const DEPARTMENT_OPTIONS = [
-  'College of Architecture',
-  'College of Arts and Sciences',
-  'College of Business',
-  'College of Computer Studies',
-  'College of Engineering',
-  'College of Health Sciences',
-  'College of Management'
-];
+// Course and department options come from the shared official college
+// program list (see src/data/collegePrograms.ts).
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -164,6 +147,9 @@ const AlumniRegister = ({ isOpen, onClose, onRegistered }: AlumniRegisterProps) 
       // swapped for the real backend API without changing the UI.
       const registration = await submitRegistration({
         fullName: formData.fullName.trim(),
+        // Optional - saved empty when the registrant has no suffix, so the
+        // registration can still be sent without it.
+        suffix: formData.suffix.trim(),
         email: formData.email.trim(),
         phone: formData.phone.trim(),
         address: formData.address.trim(),
@@ -276,6 +262,24 @@ const AlumniRegister = ({ isOpen, onClose, onRegistered }: AlumniRegisterProps) 
               value={formData.fullName}
               onChange={(e) => handleChange('fullName', e.target.value)}
             />
+          </div>
+
+          <div className="mobile-form-group">
+            <label htmlFor="reg-suffix">Suffix (Optional)</label>
+            <select
+              id="reg-suffix"
+              className={inputClass('suffix')}
+              value={formData.suffix}
+              onChange={(e) => handleChange('suffix', e.target.value)}
+            >
+              <option value="">None</option>
+              <option value="Jr.">Jr.</option>
+              <option value="Sr.">Sr.</option>
+              <option value="II">II</option>
+              <option value="III">III</option>
+              <option value="IV">IV</option>
+              <option value="V">V</option>
+            </select>
           </div>
 
           <div className="mobile-form-group">

@@ -6,7 +6,7 @@ import {
   isValidReferenceNumberFormat,
   normalizeReferenceNumber
 } from '../../services/registrationService';
-import { formatDate, getAge } from '../../utils/formatters';
+import { formatDate, formatFullName, getAge } from '../../utils/formatters';
 
 interface RegistrationStatusProps {
   isOpen: boolean;
@@ -45,7 +45,7 @@ const RegistrationStatus = ({ isOpen, onClose }: RegistrationStatusProps) => {
     }
 
     if (!isValidReferenceNumberFormat(normalized)) {
-      setError('Reference numbers look like ACC-2026-00125. Please check and try again.');
+      setError('Reference numbers look like ACC-2B23-55B19. Please check and try again.');
       setResult(null);
       return;
     }
@@ -100,7 +100,7 @@ const RegistrationStatus = ({ isOpen, onClose }: RegistrationStatusProps) => {
             id="status-reference"
             type="text"
             className="mobile-input"
-            placeholder="e.g. ACC-2026-00125"
+            placeholder="e.g. ACC-2B23-55B19"
             value={referenceInput}
             onChange={(e) => setReferenceInput(e.target.value)}
           />
@@ -139,7 +139,7 @@ const RegistrationStatus = ({ isOpen, onClose }: RegistrationStatusProps) => {
             <dl className="mobile-status-details">
               <div className="mobile-status-row">
                 <dt>Full Name</dt>
-                <dd>{result.fullName}</dd>
+                <dd>{formatFullName(result.fullName, result.suffix)}</dd>
               </div>
               <div className="mobile-status-row">
                 <dt>Email</dt>
@@ -167,7 +167,7 @@ const RegistrationStatus = ({ isOpen, onClose }: RegistrationStatusProps) => {
               </div>
               <div className="mobile-status-row">
                 <dt>Student ID</dt>
-                <dd>{result.studentId}</dd>
+                <dd>{result.studentId || '—'}</dd>
               </div>
               <div className="mobile-status-row">
                 <dt>Course</dt>

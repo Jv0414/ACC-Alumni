@@ -38,6 +38,14 @@ const AlumniProfile = () => {
     );
   }
 
+  // The academic program label depends on the education level of the record.
+  const programLabel =
+    alumni.educationLevel === 'Senior High School'
+      ? 'Strand'
+      : alumni.educationLevel === 'Elementary'
+        ? 'Grade Level'
+        : 'Course';
+
   return (
     <div className="page-content">
       <div className="profile-top-bar">
@@ -154,7 +162,11 @@ const AlumniProfile = () => {
               <span className="profile-info-value">{alumni.studentId}</span>
             </div>
             <div className="profile-info-item">
-              <span className="profile-info-label">Course</span>
+              <span className="profile-info-label">Education Level</span>
+              <span className="profile-info-value">{alumni.educationLevel}</span>
+            </div>
+            <div className="profile-info-item">
+              <span className="profile-info-label">{programLabel}</span>
               <span className="profile-info-value">{alumni.course}</span>
             </div>
             <div className="profile-info-item">

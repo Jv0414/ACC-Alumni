@@ -37,6 +37,13 @@ export const getInitials = (name: string): string => {
     .toUpperCase();
 };
 
+// Joins the optional name suffix (e.g. "Jr.") onto a full name. Registrations
+// submitted without a suffix are returned unchanged.
+export const formatFullName = (fullName: string, suffix?: string): string => {
+  const trimmedSuffix = suffix?.trim();
+  return trimmedSuffix ? `${fullName} ${trimmedSuffix}` : fullName;
+};
+
 export const getAge = (dateOfBirth: string): number => {
   const today = new Date();
   const birthDate = new Date(dateOfBirth);

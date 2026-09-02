@@ -29,7 +29,6 @@
   --border-light: #F1F5F9;
 
   --sidebar-width: 260px;
-  --sidebar-collapsed-width: 72px;
   --navbar-height: 64px;
   --radius: 12px;
   --radius-sm: 8px;
@@ -84,14 +83,6 @@ input, select, textarea {
   transition: margin-left 0.3s ease;
 }
 
-.sidebar-collapsed ~ .app-main {
-  margin-left: var(--sidebar-width);
-}
-
-.sidebar.sidebar-collapsed + .app-main {
-  margin-left: 72px;
-}
-
 .app-content {
   flex: 1;
   padding: 24px;
@@ -114,10 +105,6 @@ input, select, textarea {
   flex-direction: column;
   z-index: 1000;
   transition: width 0.3s ease, transform 0.3s ease;
-}
-
-.sidebar-collapsed {
-  width: var(--sidebar-width);
 }
 
 .sidebar-header {
@@ -244,29 +231,6 @@ input, select, textarea {
 .nav-item-logout:hover {
   background-color: rgba(239, 68, 68, 0.1);
   color: #FCA5A5;
-}
-
-.sidebar-collapse-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  color: #94A3B8;
-  padding: 6px;
-  border-radius: 6px;
-  align-self: flex-end;
-  transition: background 0.2s;
-}
-
-.sidebar-collapse-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #E2E8F0;
-}
-
-.rotate-180 {
-  transform: rotate(180deg);
-  transition: transform 0.3s ease;
 }
 
 .sidebar-overlay {
@@ -718,6 +682,61 @@ input, select, textarea {
 }
 
 /* ==========================================
+   Education Level Tabs (Alumni records)
+   ========================================== */
+
+.level-tabs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.level-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1px solid var(--border);
+  /* Square corners - matches the login container's squared-off look. */
+  border-radius: 0;
+  background-color: white;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+}
+
+.level-tab:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.level-tab.active {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.level-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background-color: var(--primary-light);
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.level-tab.active .level-tab-count {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+/* ==========================================
    Pagination
    ========================================== */
 
@@ -849,6 +868,14 @@ input, select, textarea {
 
 .action-delete:hover {
   background-color: var(--danger-light);
+}
+
+.action-approve {
+  color: var(--success);
+}
+
+.action-approve:hover {
+  background-color: var(--success-light);
 }
 
 /* ==========================================
@@ -1885,6 +1912,11 @@ input, select, textarea {
   color: var(--success);
 }
 
+.toast-danger {
+  border-left: 4px solid var(--danger);
+  color: var(--danger);
+}
+
 @keyframes slideIn {
   from {
     transform: translateX(100%);
@@ -2117,6 +2149,15 @@ input, select, textarea {
 
   .filter-select {
     width: 100%;
+  }
+
+  .level-tabs {
+    gap: 8px;
+  }
+
+  .level-tab {
+    flex: 1 1 100%;
+    justify-content: center;
   }
 
   .form-grid {
@@ -2943,16 +2984,6 @@ input, select, textarea {
   gap: 8px;
 }
 
-.mobile-job-status-chip {
-  display: inline-block;
-  background-color: var(--primary-light);
-  color: var(--primary);
-  border-radius: 999px;
-  padding: 3px 10px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
 .mobile-job-company {
   font-size: 12px;
   color: var(--text-secondary);
@@ -3012,43 +3043,6 @@ input, select, textarea {
 .mobile-profile-card p {
   font-size: 13px;
   opacity: 0.92;
-}
-
-.mobile-profile-card .mobile-job-status-chip {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: #fff;
-  border-radius: 999px;
-  padding: 3px 10px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.mobile-profile-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-top: 14px;
-}
-
-.mobile-profile-stats > div {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: var(--bg-white);
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
-  padding: 10px 8px;
-}
-
-.mobile-profile-stats strong {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.mobile-profile-stats span {
-  font-size: 11px;
-  color: var(--text-secondary);
 }
 
 .mobile-profile-section {
@@ -3734,15 +3728,6 @@ textarea.mobile-input {
     font-size: 14px;
   }
 
-  .mobile-profile-stats {
-    grid-column: 1 / -1;
-    margin-top: 0;
-  }
-
-  .mobile-profile-stats strong {
-    font-size: 16px;
-  }
-
   .mobile-profile-section {
     margin-top: 0;
   }
@@ -4218,43 +4203,6 @@ textarea.mobile-input {
   font-size: 13.5px;
   color: var(--text-secondary);
   margin-top: 2px;
-}
-
-.alumni-status-chip {
-  display: inline-block;
-  margin-top: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--success);
-  background-color: var(--success-light);
-  padding: 4px 12px;
-  border-radius: 999px;
-}
-
-.alumni-profile-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin-bottom: 20px;
-}
-
-.alumni-profile-stats > div {
-  background-color: var(--bg-white);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  text-align: center;
-}
-
-.alumni-profile-stats strong {
-  display: block;
-  font-size: 18px;
-  color: var(--text-primary);
-}
-
-.alumni-profile-stats span {
-  font-size: 12px;
-  color: var(--text-muted);
 }
 
 .alumni-profile-grid {
@@ -4857,5 +4805,196 @@ textarea.alumni-input {
   .alumni-status-lookup {
     flex-direction: column;
     align-items: stretch;
+  }
+}
+
+/* ==========================================
+   Public Home (Landing) Page
+   ========================================== */
+
+.home-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg);
+}
+
+.home-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 32px;
+  background-color: var(--bg-white);
+  border-bottom: 1px solid var(--border);
+}
+
+.home-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.home-brand img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+
+.home-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 540px;
+  overflow: hidden;
+  text-align: center;
+}
+
+.home-hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(3, 40, 12, 0.55), rgba(3, 40, 12, 0.8));
+}
+
+.home-hero-overlay {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 780px;
+  padding: 96px 24px;
+}
+
+.home-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+
+.home-hero h1 {
+  color: #fff;
+  font-size: 40px;
+  line-height: 1.2;
+  margin-bottom: 14px;
+}
+
+.home-hero-overlay p {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 16px;
+  margin-bottom: 28px;
+}
+
+.home-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.home-main {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 24px 24px;
+}
+
+.home-footer {
+  margin-top: auto;
+  padding: 20px 24px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .home-navbar {
+    padding: 12px 16px;
+  }
+
+  .home-hero {
+    min-height: 460px;
+  }
+
+  .home-hero h1 {
+    font-size: 28px;
+  }
+}
+
+/* ==========================================
+   Hover-reveal sidebar (portal home page)
+   ========================================== */
+
+/* The handle button sits on the left edge; hovering it slides the sidebar
+   out as an overlay. Hidden on mobile, where the navbar menu button opens
+   the sidebar as a drawer instead. */
+.sidebar-hover-handle {
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 26px;
+  height: 64px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+  background-color: #1E293B;
+  color: #CBD5E1;
+  z-index: 1001;
+  box-shadow: var(--shadow);
+  transition: width 0.2s ease, color 0.2s ease;
+}
+
+.sidebar-hover-handle:hover {
+  width: 32px;
+  color: #fff;
+}
+
+@media (min-width: 769px) {
+  .sidebar-hover-handle {
+    display: flex;
+  }
+
+  /* Park the sidebar off-canvas on the portal home page. */
+  .sidebar.sidebar-hover-hidden {
+    transform: translateX(-100%);
+  }
+
+  /* Reveal it while the cursor is over the handle or over the panel itself. */
+  .sidebar-hover-handle:hover ~ .sidebar.sidebar-hover-hidden,
+  .sidebar.sidebar-hover-hidden:hover {
+    transform: translateX(0);
+  }
+
+  /* Home content uses the full width; the revealed sidebar overlays it. */
+  .sidebar.sidebar-hover-hidden ~ .app-main {
+    margin-left: 0;
   }
 }

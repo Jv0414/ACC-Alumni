@@ -1,5 +1,9 @@
 export type EmploymentStatus = 'Employed' | 'Unemployed' | 'Self-employed' | 'Further Studies';
 
+// Alumni are tracked across all departments. Elementary and Senior High School
+// records share the same structure as college records.
+export type EducationLevel = 'College' | 'Senior High School' | 'Elementary';
+
 export interface Alumni {
   id: number;
   studentId: string;
@@ -9,6 +13,7 @@ export interface Alumni {
   address: string;
   dateOfBirth: string;
   gender: 'Male' | 'Female' | 'Other';
+  educationLevel: EducationLevel;
   course: string;
   department: string;
   graduationYear: number;

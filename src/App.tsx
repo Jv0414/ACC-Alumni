@@ -3,10 +3,12 @@ import { useAuth } from './hooks/useAuth';
 import type { ReactNode } from 'react';
 import DashboardLayout from './layouts/DashboardLayout';
 import AlumniSystemLayout from './layouts/AlumniSystemLayout';
+import UpcomingGrads from './pages/UpcomingGrads';
 import AlumniSystemHome from './pages/alumni/Home';
 import AlumniSystemProfile from './pages/alumni/Profile';
 import AlumniSystemRegister from './pages/alumni/Register';
 import AlumniSystemStatus from './pages/alumni/Status';
+import Home from './pages/Home';
 import Login from './pages/Login';
 import Alumni from './pages/Alumni';
 import AlumniProfile from './pages/AlumniProfile';
@@ -64,12 +66,14 @@ const App = () => {
           >
             <Route path="/alumni" element={<Alumni />} />
             <Route path="/alumni/:id" element={<AlumniProfile />} />
+            <Route path="/upcoming-grads" element={<UpcomingGrads />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
         )}
 
-        <Route path="/" element={<Navigate to={user ? '/alumni' : '/login'} replace />} />
-        <Route path="*" element={<Navigate to={user ? '/alumni' : '/login'} replace />} />
+        {/* Public landing page - visitors see the home page first. */}
+        <Route path="/" element={<Home />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

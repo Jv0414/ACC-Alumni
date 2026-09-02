@@ -11,18 +11,24 @@ import {
   UserPlus
 } from 'lucide-react';
 import type { AlumniRegistration, AlumniRegistrationData } from '../../types/Registration';
+import type { EducationLevel } from '../../types/Alumni';
 import { submitRegistration } from '../../services/registrationService';
+import {
+  COLLEGE_COURSE_DEPARTMENTS,
+  COLLEGE_COURSE_OPTIONS as COURSE_OPTIONS,
+  SENIOR_HIGH_STRAND_OPTIONS as STRAND_OPTIONS
+} from '../../data/collegePrograms';
 import type { AlumniPortalContext } from '../../layouts/AlumniSystemLayout';
 import { formatDate } from '../../utils/formatters';
 
 interface RegisterFormData {
   fullName: string;
+  suffix: string;
   email: string;
   phone: string;
   address: string;
   dateOfBirth: string;
   gender: '' | 'Male' | 'Female' | 'Other';
-  studentId: string;
   course: string;
   department: string;
   expectedGraduationYear: string;
@@ -30,42 +36,19 @@ interface RegisterFormData {
 
 const initialFormData: RegisterFormData = {
   fullName: '',
+  suffix: '',
   email: '',
   phone: '',
   address: '',
   dateOfBirth: '',
   gender: '',
-  studentId: '',
   course: '',
   department: '',
   expectedGraduationYear: ''
 };
 
-// Options mirror the departments/courses already tracked in alumniData.
-const COURSE_OPTIONS = [
-  'BS Accountancy',
-  'BS Architecture',
-  'BS Business Administration',
-  'BS Civil Engineering',
-  'BS Computer Engineering',
-  'BS Computer Science',
-  'BS Electrical Engineering',
-  'BS Information Technology',
-  'BS Mechanical Engineering',
-  'BS Nursing',
-  'BS Psychology',
-  'BS Tourism Management'
-];
-
-const DEPARTMENT_OPTIONS = [
-  'College of Architecture',
-  'College of Arts and Sciences',
-  'College of Business',
-  'College of Computer Studies',
-  'College of Engineering',
-  'College of Health Sciences',
-  'College of Management'
-];
+// Course and department options come from the shared official college
+// program list (see src/data/collegePrograms.ts).
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -75,10 +58,15 @@ const REQUIRED_FIELDS: (keyof RegisterFormData)[] = [
   'phone',
   'dateOfBirth',
   'gender',
-  'studentId',
-  'course',
-  'department',
   'expectedGraduationYear'
+];
+
+// The selected level decides which academic fields the form shows and how the
+// course/department values are derived on submit.
+const LEVEL_TABS: { id: EducationLevel; label: string }[] = [
+  { id: 'College', label: 'College' },
+  { id: 'Senior High School', label: 'Senior High School' },
+  { id: 'Elementary', label: 'Elementary' }
 ];
 
 const AlumniSystemRegister = () => {
@@ -89,6 +77,16 @@ const AlumniSystemRegister = () => {
   const [submitted, setSubmitted] = useState(false);
   const [savedRegistration, setSavedRegistration] = useState<AlumniRegistration | null>(null);
   const [copied, setCopied] = useState(false);
+  const [level, setLevel] = useState<EducationLevel>('College');
+
+  // Switching level clears the academic fields since College, Senior High
+  // School and Elementary each collect different program information.
+  const handleLevelChange = (next: EducationLevel) => {
+    if (next === level) return;
+    setLevel(next);
+    setFormData((prev) => ({ ...prev, course: '', department: '' }));
+    setErrorFields((prev) => prev.filter((f) => f !== 'course'));
+  };
 
   const handleChange = (field: keyof RegisterFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -102,6 +100,11 @@ const AlumniSystemRegister = () => {
     REQUIRED_FIELDS.forEach((field) => {
       if (!String(formData[field]).trim()) errors.add(field);
     });
+
+    // Elementary has no course/strand; College and Senior High School must pick one.
+    if (level !== 'Elementary' && !formData.course.trim()) {
+      errors.add('course');
+    }
 
     if (formData.email.trim() && !/^\S+@\S+\.\S+$/.test(formData.email.trim())) {
       errors.add('email');
@@ -135,17 +138,29 @@ const AlumniSystemRegister = () => {
       // Persist the submission. The registration service assigns the
       // reference number and the initial Pending status; this call is later
       // swapped for the real backend API without changing the UI.
+      // The department is no longer asked for - it follows from the level and
+      // program. Elementary registrants have no course/strand at all.
+      const department =
+        level === 'College'
+          ? COLLEGE_COURSE_DEPARTMENTS[formData.course] ?? ''
+          : level === 'Senior High School'
+            ? 'Senior High School Department'
+            : 'Elementary Department';
+
       const result = await submitRegistration({
         fullName: formData.fullName.trim(),
+        // Optional - saved empty when the registrant has no suffix, so the
+        // registration can still be sent without it.
+        suffix: formData.suffix.trim(),
         email: formData.email.trim(),
         phone: formData.phone.trim(),
         address: formData.address.trim(),
         dateOfBirth: formData.dateOfBirth,
         // Validation guarantees gender is selected before submission.
         gender: formData.gender as AlumniRegistrationData['gender'],
-        studentId: formData.studentId.trim(),
-        course: formData.course,
-        department: formData.department,
+        course: level === 'Elementary' ? '' : formData.course,
+        department,
+        educationLevel: level,
         expectedGraduationYear: Number(formData.expectedGraduationYear)
       });
 
@@ -272,6 +287,21 @@ const AlumniSystemRegister = () => {
         <p>Join the alumni community - fill out the form below</p>
       </div>
 
+      <div className="level-tabs" role="tablist" aria-label="Registration level">
+        {LEVEL_TABS.map((lvl) => (
+          <button
+            key={lvl.id}
+            type="button"
+            role="tab"
+            aria-selected={level === lvl.id}
+            className={`level-tab${level === lvl.id ? ' active' : ''}`}
+            onClick={() => handleLevelChange(lvl.id)}
+          >
+            {lvl.label}
+          </button>
+        ))}
+      </div>
+
       <form onSubmit={handleSubmit} noValidate>
         <div className="alumni-card">
           <div className="alumni-card-body">
@@ -296,6 +326,24 @@ const AlumniSystemRegister = () => {
                     value={formData.fullName}
                     onChange={(e) => handleChange('fullName', e.target.value)}
                   />
+                </div>
+
+                <div className="alumni-form-group">
+                  <label htmlFor="reg-suffix">Suffix (Optional)</label>
+                  <select
+                    id="reg-suffix"
+                    className={inputClass('suffix')}
+                    value={formData.suffix}
+                    onChange={(e) => handleChange('suffix', e.target.value)}
+                  >
+                    <option value="">None</option>
+                    <option value="Jr.">Jr.</option>
+                    <option value="Sr.">Sr.</option>
+                    <option value="II">II</option>
+                    <option value="III">III</option>
+                    <option value="IV">IV</option>
+                    <option value="V">V</option>
+                  </select>
                 </div>
 
                 <div className="alumni-form-group">
@@ -366,47 +414,26 @@ const AlumniSystemRegister = () => {
               <h3><GraduationCap size={16} /> Academic Background</h3>
 
               <div className="alumni-form-grid">
-                <div className="alumni-form-group">
-                  <label htmlFor="reg-studentid">Student ID *</label>
-                  <input
-                    id="reg-studentid"
-                    type="text"
-                    placeholder="e.g. AL-2018-001"
-                    className={inputClass('studentId')}
-                    value={formData.studentId}
-                    onChange={(e) => handleChange('studentId', e.target.value)}
-                  />
-                </div>
-
-                <div className="alumni-form-group">
-                  <label htmlFor="reg-course">Course *</label>
-                  <select
-                    id="reg-course"
-                    className={inputClass('course')}
-                    value={formData.course}
-                    onChange={(e) => handleChange('course', e.target.value)}
-                  >
-                    <option value="">Select course</option>
-                    {COURSE_OPTIONS.map((course) => (
-                      <option key={course} value={course}>{course}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="alumni-form-group">
-                  <label htmlFor="reg-department">Department *</label>
-                  <select
-                    id="reg-department"
-                    className={inputClass('department')}
-                    value={formData.department}
-                    onChange={(e) => handleChange('department', e.target.value)}
-                  >
-                    <option value="">Select department</option>
-                    {DEPARTMENT_OPTIONS.map((department) => (
-                      <option key={department} value={department}>{department}</option>
-                    ))}
-                  </select>
-                </div>
+                {level !== 'Elementary' && (
+                  <div className="alumni-form-group">
+                    <label htmlFor="reg-course">
+                      {level === 'Senior High School' ? 'Strand *' : 'Course *'}
+                    </label>
+                    <select
+                      id="reg-course"
+                      className={inputClass('course')}
+                      value={formData.course}
+                      onChange={(e) => handleChange('course', e.target.value)}
+                    >
+                      <option value="">
+                        {level === 'Senior High School' ? 'Select strand' : 'Select course'}
+                      </option>
+                      {(level === 'Senior High School' ? STRAND_OPTIONS : COURSE_OPTIONS).map((option) => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 <div className="alumni-form-group">
                   <label htmlFor="reg-year">Expected Graduation Year * (1950–{CURRENT_YEAR + 10})</label>

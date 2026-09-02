@@ -6,7 +6,7 @@ import AlumniProfile from '../pages/desktop/AlumniProfile';
 import AlumniRegister from '../pages/desktop/AlumniRegister';
 import RegistrationStatus from '../pages/desktop/RegistrationStatus';
 import type { AlumniRegistration } from '../types/Registration';
-import { getInitials } from '../utils/formatters';
+import { formatFullName, getInitials } from '../utils/formatters';
 
 type AlumniDesktopTab = 'home' | 'profile';
 
@@ -62,7 +62,9 @@ const AlumniDesktopLayout = ({ user, onLogout }: AlumniDesktopLayoutProps) => {
                 aria-label="My profile"
               >
                 <span className="alumni-user-avatar">{getInitials(registration.fullName)}</span>
-                <span className="alumni-user-name">{registration.fullName}</span>
+                <span className="alumni-user-name">
+                  {formatFullName(registration.fullName, registration.suffix)}
+                </span>
               </button>
             ) : (
               <button className="btn btn-primary alumni-register-cta" onClick={() => setShowRegister(true)}>

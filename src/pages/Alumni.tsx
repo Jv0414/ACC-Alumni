@@ -1,18 +1,60 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Pencil, Users } from 'lucide-react';
+import { BookOpen, GraduationCap, Pencil, Plus, School, Users } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import DataTable, { type Column } from '../components/DataTable';
 import SearchBar from '../components/SearchBar';
 import Pagination from '../components/Pagination';
 import EmptyState from '../components/EmptyState';
-import type { Alumni as AlumniType } from '../types/Alumni';
+import type { Alumni as AlumniType, EducationLevel } from '../types/Alumni';
 import { alumniData as initialAlumniData } from '../data/alumniData';
-import { getInitials } from '../utils/formatters';
+import { COLLEGE_COURSE_OPTIONS } from '../data/collegePrograms';
+import { formatDate, getInitials } from '../utils/formatters';
 
 const PAGE_SIZE = 5;
 
+// The alumni records page groups records by education level. Elementary and
+// Senior High School records share the same shape as college records; only
+// the program labels (course / strand / grade level) differ per level.
+interface LevelConfig {
+  id: EducationLevel;
+  label: string;
+  icon: LucideIcon;
+  programLabel: string;
+  filterLabel: string;
+  emptyTitle: string;
+}
+
+const LEVELS: LevelConfig[] = [
+  {
+    id: 'College',
+    label: 'College',
+    icon: GraduationCap,
+    programLabel: 'Course',
+    filterLabel: 'All Courses',
+    emptyTitle: 'No college alumni found'
+  },
+  {
+    id: 'Senior High School',
+    label: 'Senior High School',
+    icon: School,
+    programLabel: 'Strand',
+    filterLabel: 'All Strands',
+    emptyTitle: 'No senior high school alumni found'
+  },
+  {
+    id: 'Elementary',
+    label: 'Elementary',
+    icon: BookOpen,
+    programLabel: 'Grade Level',
+    filterLabel: 'All Grade Levels',
+    emptyTitle: 'No elementary alumni found'
+  }
+];
+
 const Alumni = () => {
   const [alumniList] = useState<AlumniType[]>(initialAlumniData);
+  const [level, setLevel] = useState<EducationLevel>('College');
   const [search, setSearch] = useState('');
   const [courseFilter, setCourseFilter] = useState('all');
   const [yearFilter, setYearFilter] = useState('all');
@@ -21,20 +63,42 @@ const Alumni = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const navigate = useNavigate();
 
+  const activeLevel = LEVELS.find((l) => l.id === level) ?? LEVELS[0];
+
+  // Switching lists starts a fresh search so filters never leak across levels.
+  const handleLevelChange = (next: EducationLevel) => {
+    if (next === level) return;
+    setLevel(next);
+    setSearch('');
+    setCourseFilter('all');
+    setYearFilter('all');
+    setCurrentPage(1);
+  };
+
   const handleView = (alumni: AlumniType) => {
     navigate(`/alumni/${alumni.id}`);
   };
 
+  const levelAlumni = useMemo(() => {
+    return alumniList.filter((a) => a.educationLevel === level);
+  }, [alumniList, level]);
+
   const courses = useMemo(() => {
-    return Array.from(new Set(alumniList.map((a) => a.course))).sort();
-  }, [alumniList]);
+    // College filters against the full official program list so every offering
+    // is selectable even when no records exist for it yet. The other levels
+    // derive their options from the records (strands / grade levels).
+    if (level === 'College') {
+      return COLLEGE_COURSE_OPTIONS;
+    }
+    return Array.from(new Set(levelAlumni.map((a) => a.course))).sort();
+  }, [level, levelAlumni]);
 
   const years = useMemo(() => {
-    return Array.from(new Set(alumniList.map((a) => a.graduationYear))).sort().reverse();
-  }, [alumniList]);
+    return Array.from(new Set(levelAlumni.map((a) => a.graduationYear))).sort().reverse();
+  }, [levelAlumni]);
 
   const filteredAlumni = useMemo(() => {
-    let filtered = alumniList;
+    let filtered = levelAlumni;
 
     if (search) {
       const query = search.toLowerCase();
@@ -68,7 +132,7 @@ const Alumni = () => {
     });
 
     return sorted;
-  }, [alumniList, search, courseFilter, yearFilter, sortKey, sortDirection]);
+  }, [levelAlumni, search, courseFilter, yearFilter, sortKey, sortDirection]);
 
   const totalPages = Math.ceil(filteredAlumni.length / PAGE_SIZE);
   const paginatedAlumni = filteredAlumni.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
@@ -82,46 +146,56 @@ const Alumni = () => {
     }
   };
 
+  // Elementary alumni have no program/grade level column - the other levels
+  // show Course, Strand or Grade Level instead.
+  const programColumn: Column<AlumniType> | null =
+    activeLevel.id === 'Elementary'
+      ? null
+      : {
+          key: 'course',
+          header: activeLevel.programLabel,
+          sortable: false,
+          render: (a) => <span>{a.course}</span>
+        };
+
   const columns: Column<AlumniType>[] = [
     {
-      key: 'id',
-      header: 'ID',
-      sortable: false,
-      render: (a) => <span className="text-muted">{a.id}</span>
-    },
-    {
       key: 'fullName',
-      header: 'Name',
+      header: 'Full Name',
       sortable: false,
       render: (a) => (
         <div className="alumni-name-cell">
           <div className="avatar" style={{ backgroundColor: a.avatarColor }}>
             {getInitials(a.fullName)}
           </div>
-          <div>
-            <div className="alumni-name">{a.fullName}</div>
-            <div className="alumni-email">{a.email}</div>
-          </div>
+          <div className="alumni-name">{a.fullName}</div>
         </div>
       )
     },
+    ...(programColumn ? [programColumn] : []),
     {
-      key: 'course',
-      header: 'Course',
+      key: 'phone',
+      header: 'Number',
       sortable: false,
-      render: (a) => <span>{a.course}</span>
+      render: (a) => <span>{a.phone}</span>
     },
     {
-      key: 'graduationYear',
-      header: 'Graduation Year',
+      key: 'email',
+      header: 'Email',
       sortable: false,
-      render: (a) => <span>{a.graduationYear}</span>
+      render: (a) => <span>{a.email}</span>
     },
     {
-      key: 'location',
-      header: 'Location',
+      key: 'address',
+      header: 'Address',
       sortable: false,
-      render: (a) => <span>{a.location}</span>
+      render: (a) => <span>{a.address}</span>
+    },
+    {
+      key: 'registeredAt',
+      header: 'Date Registered',
+      sortable: false,
+      render: (a) => <span>{formatDate(a.registeredAt)}</span>
     },
     {
       key: 'actions',
@@ -143,24 +217,52 @@ const Alumni = () => {
         <p>Manage and track all alumni records</p>
       </div>
 
+      <div className="level-tabs" role="tablist" aria-label="Alumni education level">
+        {LEVELS.map((lvl) => {
+          const Icon = lvl.icon;
+          const count = alumniList.filter((a) => a.educationLevel === lvl.id).length;
+          const isActive = level === lvl.id;
+          return (
+            <button
+              key={lvl.id}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              className={`level-tab${isActive ? ' active' : ''}`}
+              onClick={() => handleLevelChange(lvl.id)}
+            >
+              <Icon size={16} />
+              {lvl.label}
+              <span className="level-tab-count">{count}</span>
+            </button>
+          );
+        })}
+      </div>
+
       <div className="card">
         <div className="card-header card-header-actions">
           <div className="filters-row">
             <SearchBar
               value={search}
               onChange={setSearch}
-              placeholder="Search alumni by name, email, course..."
+              placeholder={
+                activeLevel.id === 'Elementary'
+                  ? 'Search elementary alumni by name or email...'
+                  : `Search ${activeLevel.label.toLowerCase()} alumni by name, email, ${activeLevel.programLabel.toLowerCase()}...`
+              }
             />
-            <select
-              className="filter-select"
-              value={courseFilter}
-              onChange={(e) => { setCourseFilter(e.target.value); setCurrentPage(1); }}
-            >
-              <option value="all">All Courses</option>
-              {courses.map((course) => (
-                <option key={course} value={course}>{course}</option>
-              ))}
-            </select>
+            {activeLevel.id !== 'Elementary' && (
+              <select
+                className="filter-select"
+                value={courseFilter}
+                onChange={(e) => { setCourseFilter(e.target.value); setCurrentPage(1); }}
+              >
+                <option value="all">{activeLevel.filterLabel}</option>
+                {courses.map((course) => (
+                  <option key={course} value={course}>{course}</option>
+                ))}
+              </select>
+            )}
             <select
               className="filter-select"
               value={yearFilter}
@@ -180,7 +282,7 @@ const Alumni = () => {
 
         {filteredAlumni.length === 0 ? (
           <EmptyState
-            title="No alumni found"
+            title={activeLevel.emptyTitle}
             description="Try adjusting your search or filter criteria"
             icon={<Users size={48} />}
           />
